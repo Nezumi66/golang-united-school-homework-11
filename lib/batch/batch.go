@@ -24,15 +24,18 @@ func getBatch(n int64, pool int64) (res []user) {
 	mu := sync.Mutex{}
 
 	for i = 0; i < n; i++ {
-		go func() {
-			u := getOne(i)
-			mu.Lock()
-			result = append(result, u)
-			mu.Unlock()
+		func() {
+			errGroup.Go(func() error {
+				user := getOne(i)
+				mu.Lock()
+				result = append(result, user)
+				mu.Unlock()
+				return nil
+			})
 		}()
 	}
 
 	errGroup.Wait()
 
-	return result
+	return res
 }
